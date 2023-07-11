@@ -1,0 +1,143 @@
+#!/bin/bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+_ME="$(basename "${0}")"
+
+value_defaults=("cmd=usage")
+
+selectors=()
+actions=()
+usages=()
+
+function add_flag() {
+    local var=$1
+    local usage=$2
+
+    IFS='=' read -ra vars <<< "$1"
+    local var="${vars[0]}"
+    value_defaults+=("${var}=${vars[1]:-}")
+
+    selectors+=("--${var}")
+    actions+=("${var}=true;")
+    usages+=(${usage})
+}
+
+function add_value() {
+    local var=$1
+    local usage=$2
+
+    IFS='=' read -ra vars <<< "$1"
+    local var="${vars[0]}"
+    value_defaults+=("${var}=${vars[1]:-}")
+
+    selectors+=("--${var}")
+    actions+=("${var}=\$2;shift;")
+    usages+=("${usage}")
+}
+
+function add_function() {
+    local func=$1
+    shift
+
+    action="cmd=${func};"
+
+    local args=()
+    local usage=""
+
+    while (( "$#" )); do
+        if [[ "$#" == 1 ]]; then
+           usage=$1
+        else
+            action+="${1}=\$2;shift;"
+            value_defaults+=("${1}=")
+        fi
+        shift
+    done
+
+    selectors+=(${func})
+    actions+=(${action})
+    usages+=(${usage})
+}
+
+add_function usage "Show the help command"
+function usage() {
+    echo Usage information
+    lens=${#selectors[*]}
+
+    for ((i = 0 ; i < lens ; i++)); do
+        echo ${selectors[$i]} ${usages[$i]}
+    done
+}
+
+function generate_options_parser() {
+    for i in "${value_defaults[@]}"; do
+        echo "${i};"
+    done
+    
+    local len=${#selectors[*]}   # Get total elements in an array
+
+    echo "
+while (( \"\$#\" )); do
+      case \$1 in"    
+    for ((i = 0 ; i < len ; i++)); do
+        echo "
+        ${selectors[$i]})
+             ${actions[$i]}
+             ;;"
+    done
+
+    echo "
+         *)
+            echo Unknown \$1
+            usage;
+            exit 1
+            ;;
+    esac;
+
+    shift;
+done;
+
+\${cmd}
+"
+}
+
+function thorsh() {
+    eval $(generate_options_parser)
+}
+
+if [[ $_ME == "thorsh" ]]; then
+    add_function template name "Create a new script"
+    function template() {
+        if [[ -f "${name}" ]]; then
+            echo ${name} already exists, aborting
+            exit 1
+        fi
+
+        cat > $name <<"EOF"
+#!/bin/bash
+
+DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. "$DIR/thorsh"
+
+# Usage
+# add_flag name "Description"
+# add_value name=default "Add a value setter"
+# add_function name arg1 arg2 argM "Usage string"
+#
+
+
+# Put your code here
+
+#### Important!
+
+thorsh "$@"
+
+EOF
+        chmod +x $name
+    }
+
+    thorsh "$@"
+fi

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. "$DIR/thorsh"
+
+add_function hello "Says hello"
+function hello() {
+    echo Hello, World
+}
+    
+add_value type=x11 "default server type"
+add_value image=debian-12 "default image"
+
+add_function create name "List out all of the server"
+function create() {
+    echo Called create
+    echo "name   = " ${name}
+    echo "type   = " ${type}
+    echo "image  = " ${image}
+}
+
+thorsh "$@"
