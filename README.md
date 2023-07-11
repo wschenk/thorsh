@@ -1,6 +1,6 @@
 # THORSH
 
-Like [Thor](http://whatisthor.com/), but for bash!
+Like [Thor](http://whatisthor.com), but for bash!
 
 ## Example
 
@@ -149,7 +149,7 @@ function name() {
 
 # Inspired by
 
-- [http://whatisthor.com/](Ruby's thor)
-- [https://stackoverflow.com/a/12694189](How Best to Include Other Scripts)
-- [https://binkley.blogspot.com/2016/05/metaprogramming-with-bash.html](Metaprogramming with Bash)
-- [https://github.com/xwmx/bash-boilerplate/blob/master/bash-subcommands](bash-boilerplate: bash-subcommands)
+- [Ruby's Thor](http://whatisthor.com)
+- [How Best to Include Other Scripts](https://stackoverflow.com/a/12694189)
+- [Metaprogramming with Bash](https://binkley.blogspot.com/2016/05/metaprogramming-with-bash.html)
+- [bash-boilerplate: bash-subcommands](https://github.com/xwmx/bash-boilerplate/blob/master/bash-subcommands)
