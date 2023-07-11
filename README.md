@@ -43,6 +43,17 @@ type   =  x11
 image  =  ubuntu
 ```
 
+## Quick Start
+
+```bash
+curl -L https://github.com/wschenk/thorsh/raw/main/thorsh > thorsh 
+chmod +x thorsh
+thorsh template my_script
+vi my_script
+```
+
+*`thorsh` needs to be in the same directory as your script*
+
 ## Why?
 
 I've been doing a bunch of server scripting lately, and I want to
