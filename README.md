@@ -16,10 +16,10 @@ function hello() {
     echo Hello, World
 }
     
-add_value type=x11 "Server type (default: x11)"
-add_value image=debian-12 "Image name (default: debian-12)"
+add_value type=x11 "Server type"
+add_value image=debian-12 "Image name"
 
-add_function create name "List out all of the server"
+add_function create name "Create a new server"
 function create() {
     echo Called create
     echo "name   = " ${name}
@@ -41,6 +41,18 @@ Called create
 name   =  server_name
 type   =  x11
 image  =  ubuntu
+
+$ ./example help
+Usage: example [OPTIONS] COMMAND [args]
+
+Commands
+     help                  Show the help command
+     hello                 Says hello
+     create name           Create a new server
+
+Options
+     --type=x11            Server type
+     --image=debian-12     Image name
 ```
 
 ## Quick Start

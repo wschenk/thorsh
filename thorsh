@@ -5,7 +5,7 @@ IFS=$'\n\t'
 
 _ME="$(basename "${0}")"
 
-value_defaults=("cmd=usage")
+value_defaults=("cmd=help")
 
 selectors=()
 actions=()
@@ -61,13 +61,46 @@ function add_function() {
     usages+=(${usage})
 }
 
-add_function usage "Show the help command"
-function usage() {
-    echo Usage information
+add_function help "Show the help command"
+function help() {
+    echo Usage: $_ME [OPTIONS] COMMAND [args]
+
+    echo
+    echo Commands
     lens=${#selectors[*]}
 
     for ((i = 0 ; i < lens ; i++)); do
-        echo ${selectors[$i]} ${usages[$i]}
+        local selector=${selectors[$i]}
+        firstletter=${selector:0:1}
+        IFS=';' read -ra vars <<< "${actions[$i]}"
+
+        var_len=${#vars[*]}
+        for((j = 1; j < var_len-1; j++)); do
+            selector+=" $(echo ${vars[$j]} | sed 's/=.*//')";
+        done
+
+        if [[ $firstletter != "-" ]]; then
+            printf "%5s%-20s  %s\n" "" ${selector} ${usages[$i]}
+        fi
+    done
+
+    echo
+    echo Options
+    for ((i = 0 ; i < lens ; i++)); do
+        local selector=${selectors[$i]}
+        firstletter=${selector:0:1}
+        if [[ $firstletter == "-" ]]; then
+            default=$(
+                for default in "${value_defaults[@]}"; do
+                    echo $default
+                done | grep ${selector:2} | sed 's/.*=//')
+
+            if [[ ${default} != "" ]]; then
+                selector+="=${default}"
+            fi
+            
+            printf "%5s%-20s  %s\n" "" ${selector} ${usages[$i]}
+        fi
     done
 }
 
