@@ -172,5 +172,37 @@ EOF
         chmod +x $name
     }
 
+    add_function inline name "Make a throsh script self-contained"
+    function inline() {
+        if [[ ! -f "${name}" ]]; then
+            echo ${name} not found, aborting
+            exit 1
+        fi
+
+        # Find the sourcing of thorsh
+        line=$(grep -n '. "$DIR/thorsh"' ${name} | head -1 | cut -d ":" -f 1)
+
+        if [[ -z "${line}" ]]; then
+            echo ${name} doesn\'t look like a thorsh script \(didn\'t find line\)
+            exit 1
+        fi
+
+        if [ "${line}" -gt 10 ]; then
+            echo ${name} doesn\'t look like a thorsh script \(too far down\)
+
+            exit 1
+        fi
+
+        # Find the thorsh built in commands
+        end_line=$(grep -n '== "thorsh"' thorsh | head -1 | cut -d ":" -f 1)
+
+        echo Writing to ${name}.inlined
+        {
+            head -n $(($line-1)) ${name};
+            head -n $(($end_line-1)) thorsh;
+            tail -n +$(($line+1)) ${name};
+        } > ${name}.inlined
+    }
+
     thorsh "$@"
 fi
