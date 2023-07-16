@@ -10,6 +10,7 @@ value_defaults=("cmd=help")
 selectors=()
 actions=()
 usages=()
+arity=()
 
 function add_flag() {
     local var=$1
@@ -22,6 +23,7 @@ function add_flag() {
     selectors+=("--${var}")
     actions+=("${var}=true;")
     usages+=(${usage})
+    arity+=(0)
 }
 
 function add_value() {
@@ -35,6 +37,7 @@ function add_value() {
     selectors+=("--${var}")
     actions+=("${var}=\$2;shift;")
     usages+=("${usage}")
+    arity+=(1)
 }
 
 function add_function() {
@@ -44,11 +47,12 @@ function add_function() {
     action="cmd=${func};"
 
     local args=()
+    arity+=($#)
     local usage=""
 
     while (( "$#" )); do
         if [[ "$#" == 1 ]]; then
-           usage=$1
+            usage=$1
         else
             action+="${1}=\$2;shift;"
             value_defaults+=("${1}=")
@@ -76,7 +80,9 @@ function help() {
 
         var_len=${#vars[*]}
         for((j = 1; j < var_len-1; j++)); do
-            selector+=" $(echo ${vars[$j]} | sed 's/=.*//')";
+            if [[ "${vars[$j]}" != "shift" ]]; then
+                selector+=" $(echo ${vars[$j]} | sed 's/=.*//')";
+            fi
         done
 
         if [[ $firstletter != "-" ]]; then
@@ -117,15 +123,21 @@ while (( \"\$#\" )); do
     for ((i = 0 ; i < len ; i++)); do
         echo "
         ${selectors[$i]})
-             ${actions[$i]}
-             ;;"
+            if [[ "\$\{${arity[$i]}:-}" == \"\" ]]; then
+               echo ${selectors[$i]}: missing argument;
+               echo Usage:;
+               help | grep ${selectors[$i]};
+               exit 1;
+            fi ;
+            ${actions[$i]}
+            ;;"
     done
 
     echo "
          *)
-            echo Unknown \$1
-            usage;
-            exit 1
+            echo Unknown \$1;
+            help;
+            exit 1;
             ;;
     esac;
 
